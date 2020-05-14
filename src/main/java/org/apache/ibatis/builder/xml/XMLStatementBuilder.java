@@ -15,23 +15,19 @@
  */
 package org.apache.ibatis.builder.xml;
 
-import java.util.List;
-import java.util.Locale;
-
 import org.apache.ibatis.builder.BaseBuilder;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
 import org.apache.ibatis.executor.keygen.SelectKeyGenerator;
-import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.ResultSetType;
-import org.apache.ibatis.mapping.SqlCommandType;
-import org.apache.ibatis.mapping.SqlSource;
-import org.apache.ibatis.mapping.StatementType;
+import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
+
+import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Clinton Begin
@@ -73,15 +69,15 @@ public class XMLStatementBuilder extends BaseBuilder {
 //  SELECT * FROM PERSON WHERE ID = #{id}
 //</select>
   public void parseStatementNode() {
-    String id = context.getStringAttribute("id");
+    String id = context.getStringAttribute("id");//xian先拿到id
     String databaseId = context.getStringAttribute("databaseId");
 
     //如果databaseId不匹配，退出
     if (!databaseIdMatchesCurrent(id, databaseId, this.requiredDatabaseId)) {
       return;
     }
-
-    //暗示驱动程序每次批量返回的结果行数
+    //下面获得增删改查语句标签的所有信息
+    //按序每次批量返回的结果行数
     Integer fetchSize = context.getIntAttribute("fetchSize");
     //超时时间
     Integer timeout = context.getIntAttribute("timeout");
@@ -145,7 +141,9 @@ public class XMLStatementBuilder extends BaseBuilder {
           ? new Jdbc3KeyGenerator() : new NoKeyGenerator();
     }
 
-	//又去调助手类
+	//又去调助手类，解析完成后添加映射的sql语句，最终调用
+    // org.apache.ibatis.session.Configuration.addMappedStatement
+    //来讲语句添加到Configuration中
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered, 

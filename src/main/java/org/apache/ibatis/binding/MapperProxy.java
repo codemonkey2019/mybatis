@@ -15,13 +15,13 @@
  */
 package org.apache.ibatis.binding;
 
+import org.apache.ibatis.reflection.ExceptionUtil;
+import org.apache.ibatis.session.SqlSession;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Map;
-
-import org.apache.ibatis.reflection.ExceptionUtil;
-import org.apache.ibatis.session.SqlSession;
 
 /**
  * @author Clinton Begin
@@ -48,13 +48,14 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     //代理以后，所有Mapper的方法调用时，都会调用这个invoke方法
     //并不是任何一个方法都需要执行调用代理对象进行执行，如果这个方法是Object中通用的方法（toString、hashCode等）无需执行
-    if (Object.class.equals(method.getDeclaringClass())) {
+    if (Object.class.equals(method.getDeclaringClass())) { //判断当前方发是不是Object类中的方法
       try {
-        return method.invoke(this, args);
+        return method.invoke(this, args);//直接放行Object的方法
       } catch (Throwable t) {
         throw ExceptionUtil.unwrapThrowable(t);
       }
     }
+    //下面执行代理逻辑
     //这里优化了，去缓存中找MapperMethod
     final MapperMethod mapperMethod = cachedMapperMethod(method);
     //执行

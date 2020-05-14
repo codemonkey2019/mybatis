@@ -36,7 +36,7 @@ import java.util.*;
  */
 /**
  * 映射器方法
- *
+ *  真正判断SQL类型并执行代理逻辑的类
  */
 public class MapperMethod {
 
@@ -48,10 +48,11 @@ public class MapperMethod {
     this.method = new MethodSignature(config, method);
   }
 
-  //执行
+  //执行，真正的代理逻辑
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     //可以看到执行时就是4种情况，insert|update|delete|select，分别调用SqlSession的4大类方法
+    //自定义接口中的方法底层调用的还是SqlSession底层的方法
     if (SqlCommandType.INSERT == command.getType()) {
       Object param = method.convertArgsToSqlCommandParam(args);
       result = rowCountResult(sqlSession.insert(command.getName(), param));
@@ -252,6 +253,7 @@ public class MapperMethod {
       this.params = Collections.unmodifiableSortedMap(getParams(method, this.hasNamedParameters));
     }
 
+    //如果有多个参数，所有的参数都被封装为一个Map
     public Object convertArgsToSqlCommandParam(Object[] args) {
       final int paramCount = params.size();
       if (args == null || paramCount == 0) {
@@ -261,13 +263,14 @@ public class MapperMethod {
         //如果只有一个参数
         return args[params.keySet().iterator().next().intValue()];
       } else {
-        //否则，返回一个ParamMap，修改参数名，参数名就是其位置
+        //否则，返回一个ParamMap，修改参数名，默认的参数名就是其位置
         final Map<String, Object> param = new ParamMap<Object>();
         int i = 0;
         for (Map.Entry<Integer, String> entry : params.entrySet()) {
           //1.先加一个#{0},#{1},#{2}...参数
           param.put(entry.getValue(), args[entry.getKey().intValue()]);
           // issue #71, add param names as param1, param2...but ensure backward compatibility
+          //默认是同param+i来作为参数的名称
           final String genericParamName = "param" + String.valueOf(i + 1);
           if (!param.containsKey(genericParamName)) {
             //2.再加一个#{param1},#{param2}...参数

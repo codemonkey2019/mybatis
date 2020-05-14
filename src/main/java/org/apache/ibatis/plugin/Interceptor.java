@@ -26,13 +26,19 @@ import java.util.Properties;
  */
 public interface Interceptor {
 
-  //拦截
+  //拦截方法调用
+  //四大对象运行方法时调用。
+  //这个方法需要在plugin()方法创建代理对象时被显示调用才会在运行时被执行
   Object intercept(Invocation invocation) throws Throwable;
 
-  //插入
+  //包装目标对象。包装：位目标对象创建一个代理对象。四大对象的代理对象.
+  //代理对象的invoke方法体中要调用拦截器的intercept方法，这样intercept中的逻辑就会在代理对象执行方法时被执行
+  //eg: Plugin.wrap(),使用方法见这个方法
+
+  //四大对象创建时调用
   Object plugin(Object target);
 
-  //设置属性
+  //设置属性，即配置文件中Plugin标签中定义的属性
   void setProperties(Properties properties);
 
 }

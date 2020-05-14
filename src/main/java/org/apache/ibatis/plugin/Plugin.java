@@ -15,6 +15,8 @@
  */
 package org.apache.ibatis.plugin;
 
+import org.apache.ibatis.reflection.ExceptionUtil;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -22,8 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
  * @author Clinton Begin
@@ -43,7 +43,8 @@ public class Plugin implements InvocationHandler {
     this.interceptor = interceptor;
     this.signatureMap = signatureMap;
   }
-
+  //在拦截器拦截四大对象的创建时，为四大对象创建代理对象。
+  // 这个放法只为拦截的四大对象添加调用interceptor.intercept方法的逻辑
   public static Object wrap(Object target, Interceptor interceptor) {
     //取得签名Map
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);

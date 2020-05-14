@@ -15,15 +15,15 @@
  */
 package org.apache.ibatis.session;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Properties;
-
 import org.apache.ibatis.builder.xml.XMLConfigBuilder;
 import org.apache.ibatis.exceptions.ExceptionFactory;
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Properties;
 
 /*
  * Builds {@link SqlSession} instances.
@@ -88,8 +88,12 @@ public class SqlSessionFactoryBuilder {
   //第8种方法和第4种方法差不多，Reader换成了InputStream
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {
+      //新建一个XML配置的解析器
       XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
-      return build(parser.parse());
+      return build(//返回DefaultSqlSessionFactory
+              //到这里配置解析完成，所有配置都在一个Configuration类对象中并返回
+              parser.parse()
+      );
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
     } finally {
